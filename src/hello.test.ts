@@ -19,5 +19,10 @@ describe('assert', () => {
     expect(el.isTrue(['John', 'likes', 'food'])).toBe(false)
   })
 
+  test('variables', () => {
+    el.assert((X: Person) => [X, 'likes', X])
+    expect(el.isTrue(['Mary', 'likes', 'Mary'])).toBe(true)
+  })
+
   test('rules', () => {})
 })

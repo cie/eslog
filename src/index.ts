@@ -1,4 +1,5 @@
-import { UNIFY } from './unify'
+import { UNIFY } from './term/unify'
+import Variable, { WithVariables } from './term/Variable'
 
 export type Clause<S> = S
 
@@ -8,8 +9,8 @@ export type Clause<S> = S
 export default class Eslog<Statement> {
   private clauses: Clause<Statement>[] = []
 
-  assert (...clauses: Clause<Statement>[]) {
-    this.clauses.push(...clauses)
+  assert (...clauses: WithVariables<Clause<Statement>>[]) {
+    this.clauses.push(...clauses.map(resolveVariables))
     return this
   }
   isTrue (goal: Statement): boolean {
@@ -25,4 +26,13 @@ export default class Eslog<Statement> {
       }
     }
   }
+}
+
+function resolveVariables<S> (x: WithVariables<S>) {
+  if (!(x instanceof Function)) return x
+  const argCount = x.length
+  const args = Array.from({ length: argCount }).map(
+    (_, i) => new Variable(`_${i}`)
+  )
+  return x(...args)
 }
