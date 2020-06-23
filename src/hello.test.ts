@@ -20,8 +20,10 @@ describe('assert', () => {
   })
 
   test('variables', () => {
-    el.assert((X: Person) => [X, 'likes', X])
+    el.assert(X => [X, 'likes', X])
     expect(el.isTrue(['Mary', 'likes', 'Mary'])).toBe(true)
+    expect(el.isTrue(X => ['Mary', X, 'Mary'])).toBe(true)
+    expect(el.isTrue(X => ['Mary', X, 'Joe'])).toBe(false)
   })
 
   test('rules', () => {})

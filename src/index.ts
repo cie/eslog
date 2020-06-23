@@ -13,8 +13,8 @@ export default class Eslog<Statement> {
     this.clauses.push(...clauses.map(resolveVariables))
     return this
   }
-  isTrue (goal: Statement): boolean {
-    for (const proof of this.prove(goal)) {
+  isTrue (goal: WithVariables<Statement>): boolean {
+    for (const proof of this.prove(resolveVariables(goal))) {
       return true
     }
     return false
