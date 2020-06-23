@@ -1,15 +1,9 @@
-import Eslog from '.'
+import Eslog, { is, when } from '.'
 
-type Person = 'John' | 'Mary'
-const hasLength = Symbol()
-type Statement =
-  | [Person, typeof likes, string]
-  | [unknown[], typeof hasLength, number]
-const likes = Symbol()
-const is = Symbol()
+const likes = Symbol('likes')
 
 describe('assert', () => {
-  let el: Eslog<Statement>
+  let el: Eslog
   beforeEach(() => {
     el = new Eslog()
   })
@@ -32,8 +26,12 @@ describe('assert', () => {
   })
 
   test('is', () => {
-    expect(el.isTrue(X => ['Mary', is, 'Mary'])).toBe(false)
+    expect(el.isTrue(X => ['Mary', is, 'Mary'])).toBe(true)
   })
 
-  test('rules', () => {})
+  test('rules', () => {
+    el.assert(X => [['Mary', likes, X], when, [X, is, 'food']])
+    expect(el.isTrue(X => ['Mary', likes, 'food'])).toBe(true)
+    expect(el.isTrue(X => ['Mary', likes, 'wine'])).toBe(false)
+  })
 })

@@ -1,91 +1,7 @@
 import unify, { UNIFY } from './term/unify'
 import Variable from './term/Variable'
 
-export type WithVariables<S> = ((...vars: any) => S) | S
-
-declare global {
-  interface Array<T> {
-    if<P>(...stmts: P[]): Procedure<P>
-  }
-}
-
-export function * or<P> (this: Eslog<P>, a: Statement<P>, b: Statement<P>) {
-  for (const _ of this.prove(a)) yield
-  for (const _ of this.prove(b)) yield
-}
-export function * not<P> (this: Eslog<P>, a: Statement<P>) {
-  for (const _ of this.prove(a)) return
-  yield
-}
-
-export const when = Symbol('when')
-export const and = Symbol('and')
-export const or = Symbol('or')
-export const is = Symbol('is')
-export const fails = Symbol('fails')
-
-type Builtins<P> = {}
-
-export type Call<Fn> = Fn extends (arg1: infer A1, ...args: infer AS) => any
-  ? [A1, Fn, AS]
-  : never
-export type Statement<P> = P | BuiltinStatement<P> | true
-export type BuiltinStatement<P> =
-  | [Statement<P>, typeof and, Statement<P>]
-  | [Statement<P>, typeof and, Statement<P>]
-
-export type ClauseDeclaration<P> = FactDeclaration<P> | RuleDeclaration<P>
-export type FactDeclaration<P> = P
-export type RuleDeclaration<P> = [P, typeof when, Statement<P>]
-
-function parseDeclaration<P> (x: ClauseDeclaration<P>): Procedure<P> {
-  if (x instanceof Array && x[1] === when)
-    return new Procedure(x[0], ...(x.slice(2) as P[]))
-  return new Procedure(x as P)
-}
-
-interface Predicate<P> {
-  prove(goal: Statement<P>, el: Eslog<P>): Generator<void, void, void>
-}
-
-/**
- * @param P the possible types of statement
- */
-export default class Eslog<P> {
-  private predicates: Predicate<P>[] = [new And()]
-  assert (...clauses: WithVariables<ClauseDeclaration<P>>[]) {
-    this.predicates.push(...clauses.map(resolveVariables).map(parseDeclaration))
-    return this
-  }
-  isTrue (goal: WithVariables<Statement<P>>): boolean {
-    for (const _ of this.prove(resolveVariables(goal))) return true
-    return false
-  }
-  * prove (goal: Statement<P>) {
-    for (const pred of this.predicates)
-      for (const _ of pred.prove(goal, this)) yield
-  }
-}
-
-export class Procedure<P> implements Predicate<P> {
-  head: P
-  body: Statement<P>
-  constructor (head: P, ...body: Statement<P>[]) {
-    this.head = head
-    this.body = body.reduce((a, b) => [a, and, b] as any, true)
-  }
-  * prove (goal: Statement<P>, el: Eslog<P>) {
-    for (const _ of unify(this.head, goal))
-      for (const _ of el.prove(this.body)) yield
-  }
-}
-
-export class And<P> implements Predicate<P> {
-  * prove (goal: Statement<P>, el: Eslog<P>) {
-    for (const _ of this.prove(a)) for (const _ of this.prove(b)) yield
-  }
-}
-
+export type WithVariables<S> = ((...vars: Term[]) => S) | S
 function resolveVariables<S> (x: WithVariables<S>) {
   if (x instanceof Function) return x(...createVariables(x.length))
   else return x
@@ -96,3 +12,95 @@ function createVariables (count: number) {
     () => new Variable(`_${varCounter++}`)
   )
 }
+
+export type Term = symbol | string | number | boolean | Term[] | Variable
+
+export type Clause = Fact | Rule
+export type Fact = Term
+export type Rule = [Term, typeof when, ...Term[]]
+
+function parseClause (x: Clause): Procedure {
+  if (x instanceof Array && x[1] === when)
+    return new Procedure(x[0], ...x.slice(2))
+  return new Procedure(x)
+}
+
+interface Predicate {
+  prove(goal: Term, el: Eslog): Generator<void, void, void>
+}
+
+/**
+ * @param P the possible types of statement
+ */
+export default class Eslog {
+  private predicates: Predicate[] = [...BUILTINS]
+  assert (...clauses: WithVariables<Clause>[]) {
+    this.predicates.push(...clauses.map(resolveVariables).map(parseClause))
+    return this
+  }
+  isTrue (goal: WithVariables<Term>): boolean {
+    for (const _ of this.prove(resolveVariables(goal))) return true
+    return false
+  }
+  * prove (goal: Term) {
+    for (const pred of this.predicates) {
+      for (const _ of pred.prove(goal, this)) {
+        yield
+      }
+    }
+  }
+}
+
+export class Procedure implements Predicate {
+  head: Term
+  body: Term
+  constructor (head: Term, ...body: Term[]) {
+    this.head = head
+    this.body = body.length ? body.reduce((a, b) => [a, and, b] as any) : true_
+  }
+  * prove (goal: Term, el: Eslog) {
+    for (const _ of unify(this.head, goal))
+      for (const _ of el.prove(this.body)) yield
+  }
+}
+
+export class Builtin implements Predicate {
+  constructor (
+    private key: symbol,
+    private fn: (el: Eslog, ...args: Term[]) => Generator<void, void, void>
+  ) {}
+  * prove (goal: Term, el: Eslog) {
+    if (goal === this.key) {
+      for (const _ of this.fn(el)) yield
+    } else if (goal instanceof Array && goal[1] === this.key) {
+      for (const _ of this.fn(el, goal[0], ...goal.slice(2))) yield
+    }
+  }
+}
+
+export const when = Symbol('when')
+export const and = Symbol('and')
+export const or = Symbol('or')
+export const is = Symbol('is')
+export const fails = Symbol('fails')
+export const true_ = Symbol('true_')
+
+const BUILTINS = [
+  new Builtin(and, function * (el: Eslog, a: Term, b: Term) {
+    for (const _ of el.prove(a)) for (const _ of el.prove(b)) yield
+  }),
+  new Builtin(true_, function * (el: Eslog) {
+    yield
+  }),
+  new Builtin(is, function * (el: Eslog, a: Term, b: Term) {
+    for (const _ of unify(a, b)) yield
+  }),
+  new Builtin(or, function * (el: Eslog, a: Term, b: Term) {
+    for (const _ of el.prove(a)) yield
+    for (const _ of el.prove(b)) yield
+  }),
+  new Builtin(fails, function * (el: Eslog, a: Term) {
+    for (const _ of el.prove(a)) return
+    yield
+  })
+]
