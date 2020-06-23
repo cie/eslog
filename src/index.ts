@@ -1,17 +1,23 @@
+export type Clause<S> = S
+
+/**
+ * @param S the possible types of statement
+ */
 export default class Eslog<Statement> {
-  private facts: Statement[] = []
-  assert (...facts: Statement[]) {
-    this.facts.push(...facts)
+  private clauses: Clause<Statement>[] = []
+
+  assert (...clauses: Clause<Statement>[]) {
+    this.clauses.push(...clauses)
     return this
   }
-  isTrue (s: Statement): boolean {
-    for (const proof of this.prove(s)) {
+  isTrue (goal: Statement): boolean {
+    for (const proof of this.prove(goal)) {
       return true
     }
     return false
   }
   * prove (goal: Statement) {
-    for (const fact of this.facts) {
+    for (const fact of this.clauses) {
       for (const solution of this.unify(fact, goal)) {
         yield solution
       }

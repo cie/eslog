@@ -8,7 +8,7 @@ describe('assert', () => {
   beforeEach(() => {
     el = new Eslog()
   })
-  it('works', () => {
+  test('facts', () => {
     el.assert(
       ['Mary', 'likes', 'food'],
       ['Mary', 'likes', 'wine'],
@@ -18,4 +18,6 @@ describe('assert', () => {
     expect(el.isTrue(['Mary', 'likes', 'food'])).toBe(true)
     expect(el.isTrue(['John', 'likes', 'food'])).toBe(false)
   })
+
+  test('rules', () => {})
 })
