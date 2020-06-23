@@ -1,38 +1,35 @@
 import { UNIFY } from './term/unify'
-import Variable, { WithVariables } from './term/Variable'
+import Variable from './term/Variable'
 
-export type Clause<S> = S
+export type Fact<Stmt> = Stmt
+export type Clause<Stmt> = Fact<Stmt>
+export type WithVariables<S> = ((...vars: any) => S) | S
 
 /**
- * @param S the possible types of statement
+ * @param Stmt the possible types of statement
  */
-export default class Eslog<Statement> {
-  private clauses: Clause<Statement>[] = []
-
-  assert (...clauses: WithVariables<Clause<Statement>>[]) {
-    this.clauses.push(...clauses.map(resolveVariables))
+export default class Eslog<Stmt> {
+  private clauses: Clause<Stmt>[] = []
+  private varCounter = 0
+  assert (...clauses: WithVariables<Clause<Stmt>>[]) {
+    this.clauses.push(...clauses.map(this.resolveVariables))
     return this
   }
-  isTrue (goal: WithVariables<Statement>): boolean {
-    for (const proof of this.prove(resolveVariables(goal))) {
-      return true
-    }
+  isTrue (goal: WithVariables<Stmt>): boolean {
+    for (const _ of this.prove(this.resolveVariables(goal))) return true
     return false
   }
-  * prove (goal: Statement) {
-    for (const fact of this.clauses) {
-      for (const solution of (fact as any)[UNIFY](goal)) {
-        yield solution
-      }
-    }
+  * prove (goal: Stmt) {
+    for (const fact of this.clauses)
+      for (const _ of (fact as any)[UNIFY](goal)) yield
   }
-}
-
-function resolveVariables<S> (x: WithVariables<S>) {
-  if (!(x instanceof Function)) return x
-  const argCount = x.length
-  const args = Array.from({ length: argCount }).map(
-    (_, i) => new Variable(`_${i}`)
-  )
-  return x(...args)
+  resolveVariables = <S>(x: WithVariables<S>) => {
+    if (x instanceof Function) return x(...this.createVariables(x.length))
+    else return x
+  }
+  createVariables (count: number) {
+    return Array.from({ length: count }).map(
+      () => new Variable(`_${this.varCounter++}`)
+    )
+  }
 }

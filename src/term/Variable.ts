@@ -1,7 +1,5 @@
 import unify from './unify'
 
-export type WithVariables<S> = ((...vars: any) => S) | S
-
 export default class Variable {
   name: string
   bound = false
