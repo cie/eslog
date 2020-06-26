@@ -1,10 +1,15 @@
 import BUILTINS from './builtins'
 import { Term } from './term'
 export * from './builtins'
-import { WithVariables, resolveVariables } from './term/withVariables'
+import {
+  WithVariables,
+  resolveVariables,
+  createVariables
+} from './term/withVariables'
 export { WithVariables, resolveVariables } from './term/withVariables'
 import Procedure from './Procedure'
 import stringify from './term/stringify'
+import { dereference } from './term/dereference'
 
 export const when = Symbol('when')
 export type Clause = Fact | Rule
@@ -53,5 +58,15 @@ export default class Eslog {
         yield
       }
     }
+  }
+  * map<A> (goal: Term, fn: () => A) {
+    for (const _ of this.prove(goal)) yield fn()
+  }
+  solve (goal: WithVariables<Goal>): any[][] {
+    if (!(goal instanceof Function))
+      // no variables
+      return [...this.prove(goal)].map(() => [])
+    const vars = createVariables(goal.length)
+    return [...this.map(goal(...vars), () => vars.map(dereference))]
   }
 }

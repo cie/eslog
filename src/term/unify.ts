@@ -3,8 +3,9 @@ export const UNIFY = Symbol('unify')
 // important: import submodules after declaring UNIFY, because they use it
 import './unify-array'
 import Variable from './Variable'
+import { Term } from '.'
 
-export default function * unify (a: unknown, b: unknown) {
+export default function * unify (a: Term, b: Term) {
   if (a instanceof Variable) {
     for (const _ of a.unifyWith(b)) yield
   } else if (b instanceof Variable) {

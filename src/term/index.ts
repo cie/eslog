@@ -1,2 +1,12 @@
 import Variable from './Variable'
-export type Term = symbol | string | number | boolean | Term[] | Variable
+import { ArraySpread } from './unify-array'
+export type Term =
+  | symbol
+  | string
+  | number
+  | null
+  | undefined
+  | boolean
+  | Term[]
+  | Variable
+  | ArraySpread
