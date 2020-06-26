@@ -9,7 +9,7 @@ export default class Variable {
     this.name = name
   }
 
-  * unify (value: unknown) {
+  * unifyWith (value: unknown) {
     if (!this.bound) {
       try {
         this.bound = true

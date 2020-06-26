@@ -6,9 +6,9 @@ import Variable from './Variable'
 
 export default function * unify (a: unknown, b: unknown) {
   if (a instanceof Variable) {
-    for (const _ of a.unify(b)) yield
+    for (const _ of a.unifyWith(b)) yield
   } else if (b instanceof Variable) {
-    for (const _ of b.unify(a)) yield
+    for (const _ of b.unifyWith(a)) yield
   } else if (a === null || a === undefined) {
     if (a === b) yield
   } else {

@@ -19,7 +19,7 @@ export class Builtin implements Predicate {
 export const and = Symbol('and')
 export const or = Symbol('or')
 export const is = Symbol('is')
-export const fails = Symbol('fails')
+export const not_provable = Symbol('not_provable')
 export const true_ = Symbol('true_')
 
 const BUILTINS = [
@@ -36,7 +36,7 @@ const BUILTINS = [
     for (const _ of el.prove(a)) yield
     for (const _ of el.prove(b)) yield
   }),
-  new Builtin(fails, function * (el: Eslog, a: Term) {
+  new Builtin(not_provable, function * (el: Eslog, a: Term) {
     for (const _ of el.prove(a)) return
     yield
   })

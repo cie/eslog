@@ -28,7 +28,6 @@ describe('assert', () => {
   test('is', () => {
     expect(el.isTrue(X => ['Mary', is, 'Mary'])).toBe(true)
   })
-
   test('rules', () => {
     el.assert(X => [['Mary', likes, X], when, [X, is, 'food']])
     expect(el.isTrue(X => ['Mary', likes, 'food'])).toBe(true)
