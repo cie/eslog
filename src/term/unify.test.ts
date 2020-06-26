@@ -76,6 +76,8 @@ describe('unify', () => {
     check([A, ...B], [1, 2, 5], () => eq(B.value, [2, 5]))
     check([A, ...B], [1, ...C], () => eq(B.value, C))
     check([A, ...B], [1, 2, ...C], () => eq(B.value, [2, ...C]))
+    check([1, 2, 5], [A, ...B], () => () => eq(B.value, [2, 5]))
+    check([...A], [...B, 5], () => () => eq(A.value, [...B, 5]))
   })
 })
 

@@ -1,4 +1,4 @@
-import unify from './unify'
+import unify, { UNIFY } from './unify'
 import { ArraySpread } from './unify-array'
 import { Term } from '.'
 
@@ -11,7 +11,7 @@ export default class Variable {
     this.name = name
   }
 
-  * unifyWith (value: Term) {
+  * [UNIFY] (value: Term) {
     if (value === this) {
       yield
     } else if (!this.bound) {
