@@ -7,12 +7,13 @@ import {
   createVariables
 } from './term/withVariables'
 export { WithVariables, resolveVariables } from './term/withVariables'
-import Procedure from './Procedure'
+import Procedure, { functorOf } from './Procedure'
 import stringify from './term/stringify'
 import { dereference } from './term/dereference'
 import { translateDCGRule, can_be, DCG_BUILTINS } from './dcg'
 export { can_be } from './dcg'
 import debug from './debug'
+import DB from './db'
 
 export const when = Symbol('when')
 
@@ -31,12 +32,13 @@ function parseClause (x: Clause): Procedure {
 
 export interface Predicate {
   prove(goal: Term, el: Eslog): Generator<void, void, void>
+  functor: symbol
 }
 
 export default class Eslog {
-  predicates: Predicate[] = [...BUILTINS, ...DCG_BUILTINS]
+  db = new DB([...BUILTINS, ...DCG_BUILTINS])
   assert (...clauses: WithVariables<Clause>[]) {
-    this.predicates.push(...clauses.map(resolveVariables).map(parseClause))
+    this.db.assert(...clauses.map(resolveVariables).map(parseClause))
     return this
   }
   isTrue (goal: WithVariables<Goal>): boolean {
@@ -56,7 +58,7 @@ export default class Eslog {
     }
   }
   * prove (goal: Term) {
-    for (const pred of this.predicates) {
+    for (const pred of this.db.find(functorOf(goal))) {
       for (const _ of pred.prove(goal, this)) {
         yield
       }

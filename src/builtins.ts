@@ -4,13 +4,13 @@ import { Term } from './term'
 
 export class Builtin implements Predicate {
   constructor (
-    private key: symbol,
+    public readonly functor: symbol,
     private fn: (el: Eslog, ...args: Term[]) => Generator<void, void, void>
   ) {}
   * prove (goal: Term, el: Eslog) {
-    if (goal === this.key) {
+    if (goal === this.functor) {
       for (const _ of this.fn(el)) yield
-    } else if (goal instanceof Array && goal[1] === this.key) {
+    } else if (goal instanceof Array && goal[1] === this.functor) {
       for (const _ of this.fn(el, goal[0], ...goal.slice(2))) yield
     }
   }

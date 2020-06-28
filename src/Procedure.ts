@@ -9,8 +9,10 @@ import debug from './debug'
 export default class Procedure implements Predicate {
   head: Term
   body: Term
+  functor: symbol
   constructor (head: Term, ...body: Term[]) {
     this.head = head
+    this.functor = functorOf(head)
     this.body = body.length ? body.reduce((a, b) => [a, and, b] as any) : true_
   }
   * prove (goal: Term, el: Eslog) {
@@ -30,4 +32,14 @@ export default class Procedure implements Predicate {
       }
     }
   }
+}
+
+export function functorOf (t: Term) {
+  const functor = t instanceof Array ? t[1] : t
+  if (typeof functor !== 'symbol') error('term or term[1] nust be a symbol')
+  return functor
+}
+
+function error (msg: string): never {
+  throw new Error(msg)
 }

@@ -22,8 +22,8 @@ describe('assert', () => {
   test('variables', () => {
     el.assert(X => [X, likes, X])
     expect(el.isTrue(['Mary', likes, 'Mary'])).toBe(true)
-    expect(el.isTrue(X => ['Mary', X, 'Mary'])).toBe(true)
-    expect(el.isTrue(X => ['Mary', X, 'Joe'])).toBe(false)
+    expect(el.isTrue(X => ['Mary', likes, 'Mary'])).toBe(true)
+    expect(el.isTrue(X => ['Mary', likes, 'Joe'])).toBe(false)
   })
 
   test('is', () => {
