@@ -2,7 +2,7 @@ import { Term } from '.'
 import Variable from './Variable'
 import { ArraySpread } from './unify-array'
 
-export default function stringify (t: Term): string {
+export default function stringify (t: unknown): string {
   if (t === null) return 'null'
   if (t === undefined) return 'undefined'
   if (typeof t === 'symbol') return String(t).slice(7, -1)

@@ -1,6 +1,8 @@
 import unify, { UNIFY } from './unify'
 import { ArraySpread } from './unify-array'
 import { Term } from '.'
+import stringify from './stringify'
+import debug from '../debug'
 
 export default class Variable {
   name: string
@@ -16,12 +18,14 @@ export default class Variable {
       yield
     } else if (!this.bound) {
       try {
+        if (debug.enabled) debug.begin(`${this.name}=${stringify(value)}`)
         this.bound = true
         this.value = value
         yield
       } finally {
         this.bound = false
         this.value = undefined
+        if (debug.enabled) debug.end()
       }
     } else {
       for (const _ of unify(this.value, value)) yield
@@ -30,9 +34,5 @@ export default class Variable {
 
   [Symbol.iterator] (): Iterator<ArraySpread> {
     return [new ArraySpread(this)][Symbol.iterator]()
-  }
-
-  get dereferenced () {
-    return this.bound ? this.value : this
   }
 }

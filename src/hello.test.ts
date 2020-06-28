@@ -1,4 +1,5 @@
 import Eslog, { is, when } from '.'
+import { can_be } from './dcg'
 
 const likes = Symbol('likes')
 
@@ -32,5 +33,21 @@ describe('assert', () => {
     el.assert(X => [['Mary', likes, X], when, [X, is, 'food']])
     expect(el.isTrue(X => ['Mary', likes, 'food'])).toBe(true)
     expect(el.isTrue(X => ['Mary', likes, 'wine'])).toBe(false)
+  })
+  test('dcg rules', () => {
+    const noun = Symbol('noun')
+    const noun_phrase = Symbol('noun_phrase')
+    el.assert((A, B) => [[A, noun, B], when, [A, is, ['food', ...B]]])
+    el.assert((A, B, C) => [
+      [A, noun_phrase, C],
+      when,
+      [A, is, ['the', ...B]],
+      [B, noun, C]
+    ])
+    expect(el.isTrue(X => [['food'], noun, []])).toBe(true)
+    expect(el.isTrue(X => [['food', 'a'], noun, ['a']])).toBe(true)
+    expect(el.isTrue(X => [['food', ...X], noun, X])).toBe(true)
+    expect(el.isTrue(X => [noun, can_be, ['food']])).toBe(true)
+    expect(el.isTrue(X => [noun_phrase, can_be, ['the', 'food']])).toBe(true)
   })
 })

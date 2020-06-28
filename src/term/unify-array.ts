@@ -1,6 +1,7 @@
 import unify, { UNIFY } from './unify'
 import Variable from './Variable'
 import { createVariable } from './withVariables'
+import debug from 'debug'
 
 export class ArraySpread {
   variable: Variable

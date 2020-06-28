@@ -10,8 +10,12 @@ export { WithVariables, resolveVariables } from './term/withVariables'
 import Procedure from './Procedure'
 import stringify from './term/stringify'
 import { dereference } from './term/dereference'
+import { translateDCGRule, can_be, DCG_BUILTINS } from './dcg'
+export { can_be } from './dcg'
+import debug from './debug'
 
 export const when = Symbol('when')
+
 export type Clause = Fact | Rule
 export type Fact = Term
 export type Rule = [Term, typeof when, ...Term[]]
@@ -20,6 +24,8 @@ export type Goal = Term
 function parseClause (x: Clause): Procedure {
   if (x instanceof Array && x[1] === when)
     return new Procedure(x[0], ...x.slice(2))
+  if (x instanceof Array && x[1] === can_be)
+    return translateDCGRule(x[0], ...x.slice(2))
   return new Procedure(x)
 }
 
@@ -27,11 +33,8 @@ export interface Predicate {
   prove(goal: Term, el: Eslog): Generator<void, void, void>
 }
 
-/**
- * @param P the possible types of statement
- */
 export default class Eslog {
-  private predicates: Predicate[] = [...BUILTINS]
+  predicates: Predicate[] = [...BUILTINS, ...DCG_BUILTINS]
   assert (...clauses: WithVariables<Clause>[]) {
     this.predicates.push(...clauses.map(resolveVariables).map(parseClause))
     return this
@@ -60,12 +63,14 @@ export default class Eslog {
     }
   }
   * map<A> (goal: Term, fn: () => A) {
-    for (const _ of this.prove(goal)) yield fn()
+    for (const _ of this.prove(goal)) {
+      const result = fn()
+      if (debug.enabled) debug(`YES: ${stringify(result)}`)
+      yield result
+    }
   }
   solve (goal: WithVariables<Goal>): any[][] {
-    if (!(goal instanceof Function))
-      // no variables
-      return [...this.prove(goal)].map(() => [])
+    if (!(goal instanceof Function)) return [...this.prove(goal)].map(() => [])
     const vars = createVariables(goal.length)
     return [...this.map(goal(...vars), () => vars.map(dereference))]
   }
