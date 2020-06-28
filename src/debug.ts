@@ -21,9 +21,9 @@ debug.begin = (formatter: string, ...args: any[]) => {
   debug(formatter, ...args)
   ++indent
 }
-debug.end = (formatter = '*', ...args: any[]) => {
+debug.end = (formatter?: string, ...args: any[]) => {
   --indent
-  debug(formatter, ...args)
+  if (formatter) debug(formatter, ...args)
 }
 
 export default debug

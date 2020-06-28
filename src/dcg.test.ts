@@ -65,8 +65,7 @@ describe('dcg', () => {
       [['the', 'mouse']]
     ])
 
-    return
-    expect(el.solve(A => [sentence, can_be, A])).toEqual([
+    expect(el.solve(A => [sentence, can_be, A]).slice(0, 7)).toEqual([
       [['a', 'cat', 'chases', 'a', 'cat']],
       [['a', 'cat', 'chases', 'a', 'mouse']],
       [['a', 'cat', 'chases', 'the', 'cat']],
