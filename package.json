@@ -4,6 +4,7 @@
   "description": "A JavaScript embedded Prolog system",
   "main": "lib",
   "scripts": {
+    "build": "tsc",
     "dev": "jest --watch",
     "test": "jest"
   },

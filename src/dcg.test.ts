@@ -5,8 +5,6 @@ import { createVariables } from './term/withVariables'
 import { Term } from './term'
 import Variable from './term/Variable'
 import { is } from './builtins'
-import Procedure from './Procedure'
-import Debug from 'debug'
 
 const Nonterminals = new Proxy<{ [s: string]: symbol }>(
   {},
