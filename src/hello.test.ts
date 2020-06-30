@@ -1,5 +1,6 @@
 import Eslog, { is, when } from '.'
 import { can_be } from './dcg'
+import pred, { isTrue, is as is2, both } from './pred'
 
 const likes = Symbol('likes')
 
@@ -17,6 +18,15 @@ describe('assert', () => {
     )
     expect(el.isTrue(['Mary', likes, 'food'])).toBe(true)
     expect(el.isTrue(['John', likes, 'food'])).toBe(false)
+    // ---
+    const likes2 = pred(
+      ['Mary', 'food'],
+      ['Mary', 'wine'],
+      ['John', 'wine'],
+      ['John', 'Mary']
+    )
+    expect(isTrue(likes2('Mary', 'food'))).toBe(true)
+    expect(isTrue(likes2('Mary', 'milk'))).toBe(false)
   })
 
   test('variables', () => {
@@ -24,15 +34,25 @@ describe('assert', () => {
     expect(el.isTrue(['Mary', likes, 'Mary'])).toBe(true)
     expect(el.isTrue(X => ['Mary', likes, 'Mary'])).toBe(true)
     expect(el.isTrue(X => ['Mary', likes, 'Joe'])).toBe(false)
+    // ---
+    const likes2 = pred((X, Y) => is2(X, Y))
+    expect(isTrue(likes2('Mary', 'Mary'))).toBe(true)
+    expect(isTrue(likes2('Mary', 'milk'))).toBe(false)
   })
 
   test('is', () => {
     expect(el.isTrue(X => ['Mary', is, 'Mary'])).toBe(true)
+    // ---
+    expect(isTrue(X => is2('Mary', 'Mary'))).toBe(true)
   })
   test('rules', () => {
     el.assert(X => [['Mary', likes, X], when, [X, is, 'food']])
     expect(el.isTrue(X => ['Mary', likes, 'food'])).toBe(true)
     expect(el.isTrue(X => ['Mary', likes, 'wine'])).toBe(false)
+    // ---
+    const likes2 = pred((A, B) => both(is2(A, 'Mary'), is2(B, 'food')))
+    expect(isTrue(likes2('Mary', 'food'))).toBe(true)
+    expect(isTrue(likes2('Mary', 'wine'))).toBe(false)
   })
   test('dcg rules', () => {
     const noun = Symbol('noun')
