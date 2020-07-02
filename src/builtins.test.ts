@@ -1,9 +1,9 @@
-import Eslog from '.'
-import { and, is } from './builtins'
+import { pred, both, is, solutions } from '.'
+import { isTrue } from './pred'
 
 describe('builtins', () => {
-  const el = new Eslog()
   test('and', () => {
-    el.check([[4, is, 4], and, [6, is, 6]])
+    const p = pred(() => both(is(4, 4), is(6, 6)))
+    expect(isTrue(p())).toEqual(true)
   })
 })

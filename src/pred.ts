@@ -3,7 +3,7 @@ import unify from './term/unify'
 import { createVariables } from './term/withVariables'
 import Variable from './term/Variable'
 
-export default function pred<Args extends Term[]> (
+export function pred<Args extends Term[]> (
   ...clauses: (Term | ((...args: Args) => Generator<void, void, void>))[]
 ): (...args: Args) => Generator<void, void, void> {
   return function * (...args: Args) {
@@ -28,20 +28,4 @@ export function isTrue (
     goal instanceof Function ? goal(...createVariables(goal.length)) : goal
   for (const _ of g) return true
   return false
-}
-
-export { default as is } from './term/unify'
-
-export function * both (
-  a: Generator<void, void, void>,
-  b: Generator<void, void, void>
-) {
-  for (const _ of a) for (const _ of b) yield
-}
-export function * either (
-  a: Generator<void, void, void>,
-  b: Generator<void, void, void>
-) {
-  for (const _ of a) yield
-  for (const _ of b) yield
 }
