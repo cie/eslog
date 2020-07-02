@@ -30,8 +30,10 @@ function parseClause (x: Clause): Procedure {
   return new Procedure(x)
 }
 
+export type LogicalValue = Generator<void, void, void>
+
 export interface Predicate {
-  prove(goal: Term, el: Eslog): Generator<void, void, void>
+  prove(goal: Term, el: Eslog): LogicalValue
   functor: symbol
 }
 
@@ -76,4 +78,19 @@ export default class Eslog {
     const vars = createVariables(goal.length)
     return [...this.map(goal(...vars), () => vars.map(dereference))]
   }
+}
+
+export function solutions (
+  goal: WithVariables<LogicalValue>,
+  max = Infinity
+): Term[][] {
+  if (!(goal instanceof Function)) return [...goal].map(() => [])
+  const vars = createVariables(goal.length)
+  const result = []
+  for (const _ of goal(...vars)) {
+    if (debug.enabled) debug(`YES: ${stringify(result)}`)
+    result.push(vars.map(dereference))
+    if (result.length === max) return result
+  }
+  return result
 }

@@ -1,6 +1,6 @@
-import Eslog from '.'
+import Eslog, { solutions } from '.'
 import stringify from './term/stringify'
-import { can_be, translateTerm } from './dcg'
+import { can_be, translateTerm, n } from './dcg'
 import { createVariables } from './term/withVariables'
 import { Term } from './term'
 import Variable from './term/Variable'
@@ -64,6 +64,33 @@ describe('dcg', () => {
     ])
 
     expect(el.solve(A => [sentence, can_be, A]).slice(0, 7)).toEqual([
+      [['a', 'cat', 'chases', 'a', 'cat']],
+      [['a', 'cat', 'chases', 'a', 'mouse']],
+      [['a', 'cat', 'chases', 'the', 'cat']],
+      [['a', 'cat', 'chases', 'the', 'mouse']],
+      [['a', 'cat', 'eats', 'a', 'cat']],
+      [['a', 'cat', 'eats', 'a', 'mouse']],
+      [['a', 'cat', 'eats', 'the', 'cat']]
+    ])
+  })
+  test('new syntax works', () => {
+    const determinant = n(['a'], ['the'])
+    const noun = n(['cat'], ['mouse'])
+    const noun_phrase = n([determinant, noun])
+    const verb = n(['chases'], ['eats'])
+    const sentence = n([noun_phrase, verb, noun_phrase])
+
+    expect(solutions(A => noun(A))).toEqual([[['cat']], [['mouse']]])
+    expect(solutions(A => noun_phrase(A))).toEqual([
+      [['a', 'cat']],
+      [['a', 'mouse']],
+      [['the', 'cat']],
+      [['the', 'mouse']]
+    ])
+
+    console.log(solutions(A => sentence(A)))
+
+    expect(solutions(A => sentence(A), 7)).toEqual([
       [['a', 'cat', 'chases', 'a', 'cat']],
       [['a', 'cat', 'chases', 'a', 'mouse']],
       [['a', 'cat', 'chases', 'the', 'cat']],
