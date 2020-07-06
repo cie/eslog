@@ -8,6 +8,8 @@ export { WithVariables, resolveVariables } from './term/withVariables'
 export * from './dcg'
 export * from './builtins'
 export * from './pred'
+export * from './term/string-pattern'
+export { default as Variable } from './term/Variable'
 
 export type Logical = Generator<void, void, void>
 
