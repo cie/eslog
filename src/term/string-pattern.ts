@@ -1,6 +1,7 @@
 import { Variable } from '..'
 import unify, { UNIFY } from './unify'
 import { Term } from '.'
+import { DEREFERENCE, dereference } from './dereference'
 
 export class StringPattern {
   parts: TemplateStringsArray | string[]
@@ -29,6 +30,18 @@ export class StringPattern {
     } else {
       throw new Error('StringPattern with >1 variables is not yet implemented')
     }
+  }
+
+  dereference () {
+    const dereferencedValues = this.values.map(dereference)
+    if (!dereferencedValues.every(v => typeof v === 'string')) return this
+    const segments: string[] = []
+    this.parts.forEach((p, i) => {
+      segments.push(p)
+      if (i < dereferencedValues.length)
+        segments.push(dereferencedValues[i] as string)
+    })
+    return segments.join('')
   }
 }
 

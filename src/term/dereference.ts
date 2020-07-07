@@ -1,9 +1,11 @@
 import { Term } from '.'
 import Variable from './Variable'
 import { ArraySpread } from './unify-array'
+import { StringPattern } from './string-pattern'
 
 export function dereference (t: Term): Term {
-  if (t instanceof Variable && t.bound) return dereference(t.value)
+  if (t instanceof Variable) return t.dereference()
+  if (t instanceof StringPattern) return t.dereference()
   if (t instanceof Array)
     return ([] as Term[]).concat(
       ...t.map(x => {

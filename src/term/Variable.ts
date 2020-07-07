@@ -3,6 +3,7 @@ import { ArraySpread } from './unify-array'
 import { Term } from '.'
 import stringify from './stringify'
 import debug from '../debug'
+import { dereference } from './dereference'
 
 export default class Variable {
   name: string
@@ -30,6 +31,11 @@ export default class Variable {
     } else {
       for (const _ of unify(this.value, value)) yield
     }
+  }
+
+  dereference () {
+    if (!this.bound) return this
+    return dereference(this.value)
   }
 
   [Symbol.iterator] (): Iterator<ArraySpread> {
