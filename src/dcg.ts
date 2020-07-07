@@ -10,8 +10,8 @@ import unify from './term/unify'
 
 export type Terms = Term[] | Variable
 export type Nonterminal = (Input: Terms | Variable, Rest?: Terms) => Logical
-export type Production = WithVariables<(Term | Nonterminal)[]>
-export function n (...productions: Production[]): Nonterminal {
+export type Production = WithVariables<(Term | Nonterminal | Logical)[]>
+export function nt (...productions: Production[]): Nonterminal {
   return function * (Input, Rest = []) {
     for (const prod of productions.map(resolveVariables)) {
       for (const _ of substitute(prod, Input, Rest)) yield
@@ -20,7 +20,7 @@ export function n (...productions: Production[]): Nonterminal {
 }
 
 function * substitute (
-  prod: (Term | Nonterminal)[],
+  prod: (Term | Nonterminal | Logical)[],
   Input: Terms,
   Rest: Terms
 ) {
@@ -29,8 +29,16 @@ function * substitute (
     const sym = prod[0]
     const R1 = createVariable()
     const match =
-      sym instanceof Function ? sym(Input, [...R1]) : unify([sym, ...R1], Input)
+      sym instanceof Function
+        ? sym(Input, [...R1])
+        : isLogical(sym)
+        ? sym
+        : unify([sym, ...R1], Input)
     for (const _ of match)
       for (const _ of substitute(prod.slice(1), [...R1], Rest)) yield
   }
+}
+
+function isLogical (sym: unknown): sym is Logical {
+  return typeof sym === 'object' && sym !== null && 'next' in sym
 }

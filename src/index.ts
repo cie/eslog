@@ -10,6 +10,8 @@ export * from './builtins'
 export * from './pred'
 export * from './term/string-pattern'
 export { default as Variable } from './term/Variable'
+export { createVariable as any } from './term/withVariables'
+export { Term } from './term'
 
 export type Logical = Generator<void, void, void>
 
@@ -27,3 +29,10 @@ export function solutions (
   }
   return result
 }
+
+export const ATOMS = new Proxy({} as { [s: string]: symbol }, {
+  get (target, p: string, _receiver) {
+    if (p in target) return target[p]
+    return (target[p] = Symbol(p))
+  }
+})
