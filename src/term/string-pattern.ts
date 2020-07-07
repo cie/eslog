@@ -1,7 +1,7 @@
 import { Variable } from '..'
 import unify, { UNIFY } from './unify'
 import { Term } from '.'
-import { DEREFERENCE, dereference } from './dereference'
+import { dereference } from './dereference'
 
 export class StringPattern {
   parts: TemplateStringsArray | string[]

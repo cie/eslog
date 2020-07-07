@@ -27,18 +27,21 @@ function * substitute (
   if (prod.length === 0) for (const _ of unify(Input, Rest)) yield
   else {
     const sym = prod[0]
-    const R1 = createVariable()
-    const match =
-      sym instanceof Function
-        ? sym(Input, [...R1])
-        : isLogical(sym)
-        ? sym
-        : unify([sym, ...R1], Input)
-    for (const _ of match)
-      for (const _ of substitute(prod.slice(1), [...R1], Rest)) yield
+    if (isLogical(sym)) {
+      for (const _ of sym)
+        for (const _ of substitute(prod.slice(1), Input, Rest)) yield
+    } else {
+      const R1 = createVariable()
+      const match =
+        sym instanceof Function
+          ? sym(Input, [...R1])
+          : unify([sym, ...R1], Input)
+      for (const _ of match)
+        for (const _ of substitute(prod.slice(1), [...R1], Rest)) yield
+    }
   }
 }
 
 function isLogical (sym: unknown): sym is Logical {
-  return typeof sym === 'object' && sym !== null && 'next' in sym
+  return typeof sym === 'object' && sym !== null && Symbol.iterator in sym
 }

@@ -1,4 +1,5 @@
-import { solutions, nt, s, any, ATOMS, Term, is } from '.'
+import { solutions, nt, s, any, ATOMS, Term, is, Variable } from '.'
+import Debugger from 'debug'
 describe('dcg', () => {
   test('works', () => {
     const determinant = nt(['a'], ['the'])
@@ -26,17 +27,62 @@ describe('dcg', () => {
     ])
   })
 
-  test('with strings', () => {
+  test('with parameters', () => {
     const { singular, plural } = ATOMS
-    const sentence = (Number: Term) =>
-        nt([noun_phrase(Number), verb_phrase(Number)]),
-      noun_phrase = (Number: Term) => nt([determiner(Number), noun(Number)]),
-      verb_phrase = (Number: Term) => nt([verb(Number), noun_phrase(any())]),
-      verb = (Number: Term) => nt([is(Number, singular), 'chases']),
-      determiner = (Number: Term) => nt(['the']),
-      noun = (Number: Term) => nt(['cat'])
-    expect(solutions(X => sentence(singular)(X))).toEqual([
-      [['the', 'cat', 'chases', 'the', 'cat']]
+    type Num = typeof singular | typeof plural | Variable
+    const sentence = (N: Num) => nt(() => [noun_phrase(N), verb_phrase(N)]),
+      noun_phrase = (N: Num) => nt(() => [determiner(N), noun(N)]),
+      verb_phrase = (N: Num) => nt(() => [verb(N), noun_phrase(any())]),
+      verb = (N: Num) =>
+        nt(
+          () => [is(N, singular), 'chases'],
+          () => [is(N, plural), 'chase']
+        ),
+      determiner = (N: Num) =>
+        nt(
+          () => ['the'],
+          () => [is(N, singular), 'a'],
+          () => [is(N, plural)]
+        ),
+      noun = (N: Num) =>
+        nt(
+          () => [is(N, plural), 'cats'],
+          () => [is(N, singular), 'cat']
+        )
+    expect(solutions(X => noun(any())(X))).toEqual([[['cats']], [['cat']]])
+    expect(solutions(X => determiner(singular)(X))).toEqual([
+      [['the']],
+      [['a']]
+    ])
+    expect(solutions(X => determiner(plural)(X))).toEqual([[['the']], [[]]])
+    expect(solutions(X => determiner(any())(X))).toEqual([
+      [['the']],
+      [['a']],
+      [[]]
+    ])
+    expect(solutions(X => noun_phrase(singular)(X))).toEqual([
+      [['the', 'cat']],
+      [['a', 'cat']]
+    ])
+    expect(
+      solutions(X => sentence(any())(X)).map(([x]) => (x as string[]).join(' '))
+    ).toEqual([
+      'the cats chase the cats',
+      'the cats chase the cat',
+      'the cats chase a cat',
+      'the cats chase cats',
+      'the cat chases the cats',
+      'the cat chases the cat',
+      'the cat chases a cat',
+      'the cat chases cats',
+      'a cat chases the cats',
+      'a cat chases the cat',
+      'a cat chases a cat',
+      'a cat chases cats',
+      'cats chase the cats',
+      'cats chase the cat',
+      'cats chase a cat',
+      'cats chase cats'
     ])
   })
 })
