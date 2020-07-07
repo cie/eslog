@@ -1,5 +1,6 @@
 import Variable from './Variable'
 import { ArraySpread } from './unify-array'
+import { StringPattern } from './string-pattern'
 export type Term =
   | symbol
   | string
@@ -10,3 +11,4 @@ export type Term =
   | Term[]
   | Variable
   | ArraySpread
+  | StringPattern
