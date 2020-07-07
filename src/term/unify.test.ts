@@ -4,7 +4,6 @@ import { createVariables } from './withVariables'
 import stringify from './stringify'
 import { is } from '../builtins'
 import { ArraySpread } from './unify-array'
-import Variable from './Variable'
 
 describe('unify', () => {
   function check (a: Term, b: Term, fn: false | (() => void)) {

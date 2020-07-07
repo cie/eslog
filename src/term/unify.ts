@@ -4,9 +4,6 @@ export const UNIFY = Symbol('unify')
 import './unify-array'
 import Variable from './Variable'
 import { Term } from '.'
-import stringify from './stringify'
-
-import debug from '../debug'
 
 export default function * unify (a: Term, b: Term) {
   if (a instanceof Variable) {
